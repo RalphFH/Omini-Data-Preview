@@ -1,0 +1,95 @@
+{
+  "name": "omini-data-viewer",
+  "displayName": "Omini Data Viewer",
+  "description": "Visualize binary data files (.npy, .npz, .pkl, .hdf5) with structured preview — tables, trees, and metadata at a glance.",
+  "version": "0.0.1",
+  "publisher": "RalphFH",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RalphFH/Omini-Data-Preview.git"
+  },
+  "homepage": "https://github.com/RalphFH/Omini-Data-Preview",
+  "bugs": {
+    "url": "https://github.com/RalphFH/Omini-Data-Preview/issues"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Data Science",
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "numpy",
+    "npy",
+    "npz",
+    "pickle",
+    "hdf5",
+    "h5",
+    "data viewer",
+    "binary",
+    "scientific data"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "icon": "assets/icon.png",
+  "contributes": {
+    "commands": [
+      {
+        "command": "dataViewer.open",
+        "title": "Open Data Viewer",
+        "icon": {
+          "light": "assets/light/open.svg",
+          "dark": "assets/dark/open.svg"
+        }
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "dataViewer.open",
+          "when": "resourceExtname =~ /\\.(npy|npz|pkl|hdf5|h5)$/",
+          "group": "navigation"
+        }
+      ]
+    },
+    "customEditors": [
+      {
+        "viewType": "dataViewer.binaryEditor",
+        "displayName": "Omini Data Viewer",
+        "selector": [
+          { "filenamePattern": "*.npy" },
+          { "filenamePattern": "*.npz" },
+          { "filenamePattern": "*.pkl" },
+          { "filenamePattern": "*.pickle" },
+          { "filenamePattern": "*.h5" },
+          { "filenamePattern": "*.hdf5" }
+        ],
+        "priority": "default"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run webpack",
+    "webpack": "webpack --mode production",
+    "webpack:dev": "webpack --mode development --watch",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "ts-loader": "^9.5.0",
+    "typescript": "^5.2.0",
+    "webpack": "^5.88.0",
+    "webpack-cli": "^5.1.0"
+  },
+  "dependencies": {
+    "jsfive": "^0.4.0",
+    "jszip": "^3.10.0",
+    "pickleparser": "^0.1.0"
+  }
+}

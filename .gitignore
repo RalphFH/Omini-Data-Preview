@@ -1,0 +1,20 @@
+node_modules/
+out/
+.vscode-test/
+*.vsix
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Claude / AI
+.claude/
+CLAUDE.md
+plan/
+
+# Large test files
+test/samples/episode_0.hdf5
+
+# OS
+Thumbs.db
