@@ -126,14 +126,17 @@ export abstract class BaseProvider {
   /**
    * 获取格式类型
    */
-  protected getFormat(ext: string): 'npy' | 'npz' | 'pkl' | 'hdf5' {
-    const formatMap: Record<string, 'npy' | 'npz' | 'pkl' | 'hdf5'> = {
+  protected getFormat(ext: string): 'npy' | 'npz' | 'pkl' | 'hdf5' | 'arrow' | 'mat' {
+    const formatMap: Record<string, 'npy' | 'npz' | 'pkl' | 'hdf5' | 'arrow' | 'mat'> = {
       '.npy': 'npy',
       '.npz': 'npz',
       '.pkl': 'pkl',
       '.pickle': 'pkl',
       '.h5': 'hdf5',
       '.hdf5': 'hdf5',
+      '.arrow': 'arrow',
+      '.feather': 'arrow',
+      '.mat': 'mat',
     };
     return formatMap[ext] || 'npy';
   }

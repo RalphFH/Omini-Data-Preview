@@ -2,7 +2,7 @@
 
 A VS Code / Cursor extension that lets you **open and inspect binary data files** directly in the editor — no Python scripts, no terminal, just click and view.
 
-Supports `.npy`, `.npz`, `.pkl`, `.hdf5` with format-specific UIs: data tables for arrays, collapsible trees for dicts, and a hierarchical browser for HDF5 groups.
+Supports `.npy`, `.npz`, `.pkl`, `.hdf5`, `.arrow`, `.feather`, `.mat` with format-specific UIs: data tables for arrays, collapsible trees for dicts, a hierarchical browser for HDF5 groups, columnar preview for Arrow/Feather, and variable browsing for MATLAB.
 
 ## Supported Formats
 
@@ -12,6 +12,8 @@ Supports `.npy`, `.npz`, `.pkl`, `.hdf5` with format-specific UIs: data tables f
 | NumPy archive | `.npz` | Multiple arrays, clickable list to switch |
 | Python Pickle | `.pkl` `.pickle` | Nested dicts, lists, scalars — interactive tree |
 | HDF5 | `.h5` `.hdf5` | Groups + datasets hierarchy, shape badges, large file support |
+| Apache Arrow | `.arrow` `.feather` | Columnar table with schema, column types, data preview |
+| MATLAB | `.mat` | Named variables with shape/type info, clickable variable list |
 
 ## Features
 
@@ -49,7 +51,7 @@ npm run package
 Generate test files with Python (requires `numpy` and `h5py`):
 
 ```bash
-conda activate dataviewer   # or any env with numpy + h5py
+conda activate dataviewer   # or any env with numpy, h5py, pyarrow, scipy
 python test/generate_samples.py
 ```
 
@@ -62,6 +64,8 @@ This creates sample files in `test/samples/` covering all supported formats.
   - NumPy (.npy/.npz): Custom parser (no native deps)
   - Pickle: [pickleparser](https://www.npmjs.com/package/pickleparser)
   - HDF5: [jsfive](https://www.npmjs.com/package/jsfive) (pure JavaScript, no WASM)
+  - Arrow/Feather: [apache-arrow](https://www.npmjs.com/package/apache-arrow) (official JS implementation)
+  - MATLAB: [mat-for-js](https://www.npmjs.com/package/mat-for-js) (pure JavaScript)
   - ZIP: [jszip](https://www.npmjs.com/package/jszip)
 - **Extension API**: VS Code Custom Editor (`CustomReadonlyEditorProvider`)
 
@@ -71,6 +75,8 @@ This creates sample files in `test/samples/` covering all supported formats.
 - HDF5 datasets exceeding 10,000 elements display metadata only
 - Pickle support covers protocols 0–5; some custom Python classes may not deserialize
 - NumPy structured dtypes and object arrays are not fully supported
+- MATLAB v7.3 files (HDF5-based) should be opened as `.h5`; only Level 5 MAT format is natively supported
+- Arrow tables preview first 100 rows × 50 columns
 
 ## License
 

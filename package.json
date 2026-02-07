@@ -1,8 +1,8 @@
 {
   "name": "omini-data-viewer",
   "displayName": "Omini Data Viewer",
-  "description": "Visualize binary data files (.npy, .npz, .pkl, .hdf5) with structured preview — tables, trees, and metadata at a glance.",
-  "version": "0.0.2",
+  "description": "Visualize binary data files (.npy, .npz, .pkl, .hdf5, .arrow, .feather, .mat) with structured preview — tables, trees, and metadata at a glance.",
+  "version": "0.0.3",
   "publisher": "RalphFH",
   "license": "MIT",
   "repository": {
@@ -28,6 +28,10 @@
     "pickle",
     "hdf5",
     "h5",
+    "arrow",
+    "feather",
+    "matlab",
+    "mat",
     "data viewer",
     "binary",
     "scientific data"
@@ -50,7 +54,7 @@
       "editor/title": [
         {
           "command": "dataViewer.open",
-          "when": "resourceExtname =~ /\\.(npy|npz|pkl|hdf5|h5)$/",
+          "when": "resourceExtname =~ /\\.(npy|npz|pkl|hdf5|h5|arrow|feather|mat)$/",
           "group": "navigation"
         }
       ]
@@ -60,12 +64,33 @@
         "viewType": "dataViewer.binaryEditor",
         "displayName": "Omini Data Viewer",
         "selector": [
-          { "filenamePattern": "*.npy" },
-          { "filenamePattern": "*.npz" },
-          { "filenamePattern": "*.pkl" },
-          { "filenamePattern": "*.pickle" },
-          { "filenamePattern": "*.h5" },
-          { "filenamePattern": "*.hdf5" }
+          {
+            "filenamePattern": "*.npy"
+          },
+          {
+            "filenamePattern": "*.npz"
+          },
+          {
+            "filenamePattern": "*.pkl"
+          },
+          {
+            "filenamePattern": "*.pickle"
+          },
+          {
+            "filenamePattern": "*.h5"
+          },
+          {
+            "filenamePattern": "*.hdf5"
+          },
+          {
+            "filenamePattern": "*.arrow"
+          },
+          {
+            "filenamePattern": "*.feather"
+          },
+          {
+            "filenamePattern": "*.mat"
+          }
         ],
         "priority": "default"
       }
@@ -88,8 +113,10 @@
     "webpack-cli": "^5.1.0"
   },
   "dependencies": {
+    "apache-arrow": "^21.1.0",
     "jsfive": "^0.4.0",
     "jszip": "^3.10.0",
+    "mat-for-js": "^1.1.0",
     "pickleparser": "^0.1.0"
   }
 }

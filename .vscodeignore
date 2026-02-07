@@ -13,6 +13,3 @@ webpack.config.js
 **/*.map
 **/.DS_Store
 node_modules/**
-!node_modules/jsfive/**
-!node_modules/jszip/**
-!node_modules/pickleparser/**

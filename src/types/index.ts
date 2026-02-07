@@ -1,6 +1,6 @@
 // 数据可视化插件类型定义
 
-export type DataFormat = 'npy' | 'npz' | 'pkl' | 'hdf5';
+export type DataFormat = 'npy' | 'npz' | 'pkl' | 'hdf5' | 'arrow' | 'mat';
 
 export type NodeType = 'scalar' | 'array' | 'object' | 'string';
 
@@ -21,6 +21,14 @@ export interface MetaInfo {
   // npz/hdf5 专用
   keys?: string[];
   compression?: string;
+
+  // arrow 专用
+  columns?: string[];
+  numRows?: number;
+  numCols?: number;
+
+  // mat 专用
+  variables?: string[];
 
   lastModified: Date;
   previewSize: number;

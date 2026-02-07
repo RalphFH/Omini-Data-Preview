@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.0.3 (2025-02-07)
+
+### Added
+
+- **Apache Arrow / Feather** support (`.arrow`, `.feather`) — columnar table preview with schema, column types, and data sampling
+- **MATLAB** support (`.mat`) — variable browser with clickable list, shape/dtype badges, data tables for arrays, tree view for structs
+
+### Dependencies
+
+- Added `apache-arrow` for Arrow/Feather parsing
+- Added `mat-for-js` for MATLAB Level 5 MAT-file parsing
+
 ## 0.0.2 (2025-02-06)
 
 ### Changed

@@ -4,12 +4,16 @@ import { NpyProvider } from './providers/NpyProvider';
 import { NpzProvider } from './providers/NpzProvider';
 import { PklProvider } from './providers/PklProvider';
 import { Hdf5Provider } from './providers/Hdf5Provider';
+import { ArrowProvider } from './providers/ArrowProvider';
+import { MatProvider } from './providers/MatProvider';
 
 const providers = {
   npy: new NpyProvider(),
   npz: new NpzProvider(),
   pkl: new PklProvider(),
   hdf5: new Hdf5Provider(),
+  arrow: new ArrowProvider(),
+  mat: new MatProvider(),
 };
 
 function getProviderForExt(ext: string) {
@@ -17,6 +21,8 @@ function getProviderForExt(ext: string) {
   if (ext === '.npz') return providers.npz;
   if (ext === '.pkl' || ext === '.pickle') return providers.pkl;
   if (ext === '.h5' || ext === '.hdf5') return providers.hdf5;
+  if (ext === '.arrow' || ext === '.feather') return providers.arrow;
+  if (ext === '.mat') return providers.mat;
   return null;
 }
 
@@ -655,6 +661,165 @@ function renderPklTree(node: any, isRoot: boolean = false): string {
   </div>`;
 }
 
+function renderArrowView(data: any): string {
+  const m = data.meta;
+  const columns: string[] = data.data.columns || m.columns || [];
+  const columnTypes: string[] = data.data.columnTypes || [];
+  const rows: any[][] = data.data.value || [];
+  const totalRows: number = m.numRows || rows.length;
+  const totalCols: number = m.numCols || columns.length;
+  const displayCols = Math.min(columns.length, 10);
+
+  // Sidebar: column list
+  let colListHtml = '';
+  columns.forEach((col: string, idx: number) => {
+    const typeBadge = columnTypes[idx]
+      ? ` <span class="badge badge-dtype" style="font-size:10px">${escapeHtml(columnTypes[idx])}</span>`
+      : '';
+    colListHtml += `<div style="padding:2px 0;font-size:12px;display:flex;align-items:center;gap:4px">
+      <span style="color:var(--vscode-descriptionForeground)">${idx}</span>
+      <span>${escapeHtml(col)}</span>${typeBadge}
+    </div>`;
+  });
+
+  const sidebar = `
+    <div class="sidebar">
+      <div class="section-title">Overview</div>
+      <div class="meta-row"><span class="meta-key">Format</span><span class="badge badge-dtype">Arrow</span></div>
+      <div class="meta-row"><span class="meta-key">Rows</span><span class="meta-val">${totalRows.toLocaleString()}</span></div>
+      <div class="meta-row"><span class="meta-key">Columns</span><span class="meta-val">${totalCols}</span></div>
+      <div class="meta-row"><span class="meta-key">Size</span><span class="meta-val">${formatBytes(m.fileSize)}</span></div>
+      <div style="margin-top:16px">
+        <div class="section-title">Columns</div>
+        ${colListHtml}
+      </div>
+    </div>`;
+
+  // Main: data table with column name headers
+  let tableHtml = '';
+  if (rows.length > 0) {
+    tableHtml = '<div class="data-table-wrap"><table class="data-table"><thead><tr><th></th>';
+    for (let c = 0; c < displayCols; c++) {
+      tableHtml += `<th title="${escapeHtml(columnTypes[c] || '')}">${escapeHtml(columns[c])}</th>`;
+    }
+    if (displayCols < totalCols) tableHtml += '<th>...</th>';
+    tableHtml += '</tr></thead><tbody>';
+
+    const maxRows = Math.min(rows.length, 20);
+    for (let r = 0; r < maxRows; r++) {
+      tableHtml += `<tr><td class="row-idx">${r}</td>`;
+      for (let c = 0; c < displayCols; c++) {
+        const v = rows[r][c];
+        const full = v != null ? String(v) : '';
+        const display = typeof v === 'number' ? formatNum(v) : escapeHtml(String(v ?? ''));
+        tableHtml += `<td title="${escapeHtml(full)}">${display}</td>`;
+      }
+      if (displayCols < totalCols) tableHtml += '<td>...</td>';
+      tableHtml += '</tr>';
+    }
+    tableHtml += '</tbody></table></div>';
+
+    if (maxRows < totalRows || displayCols < totalCols) {
+      tableHtml += `<div class="truncation-note">Showing ${maxRows} of ${totalRows.toLocaleString()} rows, ${displayCols} of ${totalCols} columns</div>`;
+    }
+  } else {
+    tableHtml = '<p style="color:var(--vscode-descriptionForeground)">Empty table (0 rows)</p>';
+  }
+
+  const mainContent = `
+    <div class="main">
+      <h3 style="margin:0 0 4px 0">Data Preview</h3>
+      <div class="detail-badges" style="margin-bottom:8px">
+        <span class="badge badge-shape">${totalRows.toLocaleString()} × ${totalCols}</span>
+      </div>
+      ${tableHtml}
+    </div>`;
+
+  return wrapHtml(m.filename, `Arrow · ${formatBytes(m.fileSize)}`, sidebar + mainContent);
+}
+
+function renderMatView(data: any): string {
+  const m = data.meta;
+  const children = data.data.children || [];
+
+  // Sidebar: variable list (clickable like NPZ)
+  let varListHtml = '';
+  children.forEach((child: any, idx: number) => {
+    const typeBadge = child.type === 'array' && child.meta?.shape
+      ? ` <span class="badge badge-shape" style="font-size:10px">${child.meta.shape.join('×')}</span>`
+      : child.type === 'object'
+        ? ` <span class="badge badge-count" style="font-size:10px">struct</span>`
+        : child.type === 'string'
+          ? ` <span class="badge badge-dtype" style="font-size:10px">char</span>`
+          : '';
+    const icon = child.type === 'object' ? '📋' : child.type === 'array' ? '📦' : '📄';
+    varListHtml += `<div class="key-list-item${idx === 0 ? ' active' : ''}" data-key="${idx}" onclick="selectMatVar(${idx})">
+      <span>${icon}</span><span>${escapeHtml(child.key)}</span>${typeBadge}
+    </div>`;
+  });
+
+  const sidebar = `
+    <div class="sidebar">
+      <div class="section-title">Overview</div>
+      <div class="meta-row"><span class="meta-key">Format</span><span class="badge badge-dtype">MAT</span></div>
+      <div class="meta-row"><span class="meta-key">Variables</span><span class="meta-val">${children.length}</span></div>
+      <div class="meta-row"><span class="meta-key">Size</span><span class="meta-val">${formatBytes(m.fileSize)}</span></div>
+      <div style="margin-top:16px">
+        <div class="section-title">Variables</div>
+        ${varListHtml}
+      </div>
+    </div>`;
+
+  // Panels per variable
+  let panelsHtml = '';
+  children.forEach((child: any, idx: number) => {
+    let contentHtml = '';
+
+    if (child.type === 'array') {
+      const shape = child.meta?.shape || [];
+      const dtype = child.meta?.dtype || '?';
+      const totalElements = shape.reduce((a: number, b: number) => a * b, 1);
+      contentHtml = `
+        <div class="detail-badges">
+          <span class="badge badge-shape">${shape.join(' × ') || 'scalar'}</span>
+          <span class="badge badge-dtype">${dtype}</span>
+          <span class="badge badge-count">${totalElements.toLocaleString()} elements</span>
+        </div>
+        ${renderDataTable(child.value, shape)}`;
+    } else if (child.type === 'object') {
+      contentHtml = renderPklTree(child, true);
+    } else if (child.type === 'string') {
+      const s = String(child.value);
+      const display = s.length > 500 ? s.slice(0, 500) + '...' : s;
+      contentHtml = `<div class="detail-badges">
+          <span class="badge badge-dtype">char</span>
+          <span class="badge badge-count">${s.length} chars</span>
+        </div>
+        <pre style="margin-top:8px;white-space:pre-wrap;word-break:break-all">${escapeHtml(display)}</pre>`;
+    } else {
+      contentHtml = `<span class="tree-num">${escapeHtml(String(child.value))}</span>`;
+    }
+
+    panelsHtml += `<div id="mat-panel-${idx}" class="mat-panel" style="${idx !== 0 ? 'display:none' : ''}">
+      <h3 style="margin:0 0 8px 0">${escapeHtml(child.key)}</h3>
+      ${contentHtml}
+    </div>`;
+  });
+
+  const mainContent = `<div class="main">${panelsHtml}</div>`;
+
+  const extraScript = `
+    function selectMatVar(idx) {
+      document.querySelectorAll('.key-list-item').forEach(function(el) { el.classList.remove('active'); });
+      document.querySelectorAll('.mat-panel').forEach(function(el) { el.style.display = 'none'; });
+      document.querySelector('.key-list-item[data-key="'+idx+'"]').classList.add('active');
+      document.getElementById('mat-panel-'+idx).style.display = 'block';
+    }
+  `;
+
+  return wrapHtml(m.filename, `MAT · ${formatBytes(m.fileSize)}`, sidebar + mainContent, extraScript);
+}
+
 function renderHdf5View(data: any): string {
   const m = data.meta;
   hdf5NodeCounter = 0;
@@ -806,6 +971,8 @@ function getWebviewContent(data: any): string {
     case 'npz': return renderNpzView(data);
     case 'pkl': return renderPklView(data);
     case 'hdf5': return renderHdf5View(data);
+    case 'arrow': return renderArrowView(data);
+    case 'mat': return renderMatView(data);
     default: return renderNpyView(data); // fallback
   }
 }

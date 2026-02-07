@@ -1,5 +1,5 @@
 """
-生成测试用例文件：.npy, .npz, .pkl, .hdf5
+生成测试用例文件：.npy, .npz, .pkl, .hdf5, .arrow, .mat
 在 dataviewer conda 环境下运行:
   conda activate dataviewer
   python test/generate_samples.py
@@ -86,6 +86,50 @@ with h5py.File(os.path.join(SAMPLES_DIR, "experiment.hdf5"), "w") as f:
     ev.create_dataset("labels", data=np.array([1, 0, 2, 1, 0], dtype=np.int32))
 
 print("[hdf5] 1 file generated")
+
+
+# === 5. .arrow 文件 ===
+
+try:
+    import pyarrow as pa
+
+    table = pa.table({
+        "id": pa.array(range(1, 21), type=pa.int32()),
+        "name": pa.array([f"item_{i}" for i in range(1, 21)], type=pa.string()),
+        "value": pa.array(np.random.rand(20).astype(np.float64)),
+        "category": pa.array(np.random.choice(["A", "B", "C"], size=20)),
+        "active": pa.array(np.random.choice([True, False], size=20)),
+    })
+
+    import pyarrow.feather as pf
+    pf.write_feather(table, os.path.join(SAMPLES_DIR, "sample_table.arrow"), compression="uncompressed")
+    print("[arrow] 1 file generated")
+except ImportError:
+    print("[arrow] SKIPPED (pyarrow not installed)")
+
+
+# === 6. .mat 文件 ===
+
+try:
+    import scipy.io as sio
+
+    sio.savemat(
+        os.path.join(SAMPLES_DIR, "sample_data.mat"),
+        {
+            "x": np.linspace(0, 2 * np.pi, 100, dtype=np.float64),
+            "y": np.sin(np.linspace(0, 2 * np.pi, 100, dtype=np.float64)),
+            "matrix": np.random.rand(5, 4).astype(np.float32),
+            "label": "experiment_001",
+            "config": {
+                "lr": np.float64(0.001),
+                "epochs": np.int32(50),
+            },
+        },
+    )
+    print("[mat] 1 file generated")
+except ImportError:
+    print("[mat] SKIPPED (scipy not installed)")
+
 
 print(f"\nAll samples saved to: {SAMPLES_DIR}")
 for fname in sorted(os.listdir(SAMPLES_DIR)):
