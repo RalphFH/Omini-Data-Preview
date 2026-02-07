@@ -2,7 +2,7 @@
   "name": "omini-data-viewer",
   "displayName": "Omini Data Viewer",
   "description": "Visualize binary data files (.npy, .npz, .pkl, .hdf5) with structured preview — tables, trees, and metadata at a glance.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "RalphFH",
   "license": "MIT",
   "repository": {

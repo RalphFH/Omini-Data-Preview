@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.2 (2025-02-06)
+
+### Changed
+
+- Redesigned extension icon with polished dark-themed data viewer graphic (256x256)
+
 ## 0.0.1 (2025-02-06)
 
 Initial release.
